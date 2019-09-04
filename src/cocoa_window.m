@@ -308,6 +308,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (void)windowDidBecomeKey:(NSNotification *)notification
 {
+    //NSLog(@"Window became key");
     if (_glfw.ns.disabledCursorWindow == window)
         _glfwCenterCursorInContentArea(window);
 
@@ -315,8 +316,19 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     updateCursorMode(window);
 }
 
+- (void)windowDidResignMain:(NSNotification *)notification
+{
+//    NSLog(@"Window resigned main");
+}
+
+- (void)windowDidBecomeMain:(NSNotification *)notification
+{
+//    NSLog(@"Window became main");
+}
+
 - (void)windowDidResignKey:(NSNotification *)notification
 {
+    //NSLog(@"Window resigned key");
     if (window->monitor && window->autoIconify)
         _glfwPlatformIconifyWindow(window);
 
@@ -414,6 +426,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (void)mouseDown:(NSEvent *)event
 {
+    //NSLog(@"Mouse clicked");
     _glfwInputMouseClick(window,
                          GLFW_MOUSE_BUTTON_LEFT,
                          GLFW_PRESS,
@@ -501,6 +514,8 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (void)mouseExited:(NSEvent *)event
 {
+
+//NSLog(@"Mouse exited");
     if (window->cursorMode == GLFW_CURSOR_HIDDEN)
         showCursor(window);
 
@@ -509,6 +524,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (void)mouseEntered:(NSEvent *)event
 {
+//NSLog(@"Mouse entered");
     if (window->cursorMode == GLFW_CURSOR_HIDDEN)
         hideCursor(window);
 
@@ -549,19 +565,26 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (void)updateTrackingAreas
 {
+
     if (trackingArea != nil)
     {
         [self removeTrackingArea:trackingArea];
         [trackingArea release];
     }
-
+    const NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited |
+                                          NSTrackingActiveAlways | 
+                                          NSTrackingEnabledDuringMouseDrag |
+                                          NSTrackingCursorUpdate |
+                                          NSTrackingInVisibleRect |
+                                          NSTrackingAssumeInside;
+/*
     const NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited |
                                           NSTrackingActiveInKeyWindow |
                                           NSTrackingEnabledDuringMouseDrag |
                                           NSTrackingCursorUpdate |
                                           NSTrackingInVisibleRect |
                                           NSTrackingAssumeInside;
-
+*/
     trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds]
                                                 options:options
                                                   owner:self

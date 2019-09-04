@@ -25,7 +25,7 @@
 //========================================================================
 // It is fine to use C99 in this file because it will not be built with VS
 //========================================================================
-
+//#include "Log.h"
 #include "internal.h"
 #include <sys/param.h> // For MAXPATHLEN
 
@@ -443,6 +443,8 @@ static GLFWbool initializeTIS(void)
         }
         else
             createMenuBar();
+    } else{
+        [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
     }
 }
 
