@@ -571,6 +571,7 @@ static void disableCursor(_GLFWwindow* window)
                  CurrentTime);
 }
 
+
 // Exit disabled cursor mode for the specified window
 //
 static void enableCursor(_GLFWwindow* window)
@@ -625,8 +626,7 @@ static GLFWbool createNativeWindow(_GLFWwindow* window,
 
         window->x11.handle = XCreateWindow(_glfw.x11.display,
                                            _glfw.x11.root,
-                                           0, 0,
-                                           width, height,
+                                           0, 0, width, height,
                                            0,      // Border width
                                            depth,  // Color depth
                                            InputOutput,
@@ -654,13 +654,21 @@ static GLFWbool createNativeWindow(_GLFWwindow* window,
 
     if (_glfw.x11.NET_WM_STATE && !window->monitor)
     {
-        Atom states[3];
+        Atom states[5];
         int count = 0;
 
         if (wndconfig->floating)
         {
             if (_glfw.x11.NET_WM_STATE_ABOVE)
                 states[count++] = _glfw.x11.NET_WM_STATE_ABOVE;
+        }
+
+        if (wndconfig->hideFromTaskbar)
+        {
+            if (_glfw.x11.NET_WM_STATE_SKIP_TASKBAR && _glfw.x11.NET_WM_STATE_SKIP_PAGER ){
+                states[count++] = _glfw.x11.NET_WM_STATE_SKIP_PAGER;
+                states[count++] = _glfw.x11.NET_WM_STATE_SKIP_TASKBAR;
+            }
         }
 
         if (wndconfig->maximized)
@@ -704,10 +712,14 @@ static GLFWbool createNativeWindow(_GLFWwindow* window,
                         (unsigned char*) &pid, 1);
     }
 
-    if (_glfw.x11.NET_WM_WINDOW_TYPE && _glfw.x11.NET_WM_WINDOW_TYPE_NORMAL)
+    if (_glfw.x11.NET_WM_WINDOW_TYPE)
     {
         Atom type = _glfw.x11.NET_WM_WINDOW_TYPE_NORMAL;
-        XChangeProperty(_glfw.x11.display,  window->x11.handle,
+        if (wndconfig->hideFromTaskbar && _glfw.x11.NET_WM_WINDOW_TYPE_UTILITY)
+        {
+            type = _glfw.x11.NET_WM_WINDOW_TYPE_UTILITY;
+        }
+        XChangeProperty(_glfw.x11.display, window->x11.handle,
                         _glfw.x11.NET_WM_WINDOW_TYPE, XA_ATOM, 32,
                         PropModeReplace, (unsigned char*) &type, 1);
     }
@@ -2564,7 +2576,6 @@ void _glfwPlatformSetWindowDecorated(_GLFWwindow* window, GLFWbool enabled)
                         sizeof(hints) / sizeof(long));
     }
 }
-
 void _glfwPlatformSetWindowFloating(_GLFWwindow* window, GLFWbool enabled)
 {
     if (!_glfw.x11.NET_WM_STATE || !_glfw.x11.NET_WM_STATE_ABOVE)

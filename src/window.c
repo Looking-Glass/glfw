@@ -203,6 +203,7 @@ GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height,
     window->autoIconify = wndconfig.autoIconify;
     window->floating    = wndconfig.floating;
     window->focusOnShow = wndconfig.focusOnShow;
+    window->hideFromTaskbar = wndconfig.hideFromTaskbar;
     window->cursorMode  = GLFW_CURSOR_NORMAL;
 
     window->minwidth    = GLFW_DONT_CARE;
@@ -371,6 +372,9 @@ GLFWAPI void glfwWindowHint(int hint, int value)
             return;
         case GLFW_CENTER_CURSOR:
             _glfw.hints.window.centerCursor = value ? GLFW_TRUE : GLFW_FALSE;
+            return;
+        case GLFW_HIDE_FROM_TASKBAR:
+            _glfw.hints.window.hideFromTaskbar = value ? GLFW_TRUE : GLFW_FALSE;
             return;
         case GLFW_FOCUS_ON_SHOW:
             _glfw.hints.window.focusOnShow = value ? GLFW_TRUE : GLFW_FALSE;
@@ -817,6 +821,8 @@ GLFWAPI int glfwGetWindowAttrib(GLFWwindow* handle, int attrib)
             return _glfwPlatformWindowMaximized(window);
         case GLFW_HOVERED:
             return _glfwPlatformWindowHovered(window);
+        case GLFW_HIDE_FROM_TASKBAR:
+            return window->hideFromTaskbar;
         case GLFW_FOCUS_ON_SHOW:
             return window->focusOnShow;
         case GLFW_TRANSPARENT_FRAMEBUFFER:

@@ -433,6 +433,10 @@ static void detectEWMH(void)
         getSupportedAtom(supportedAtoms, atomCount, "_NET_WM_STATE_FULLSCREEN");
     _glfw.x11.NET_WM_STATE_MAXIMIZED_VERT =
         getSupportedAtom(supportedAtoms, atomCount, "_NET_WM_STATE_MAXIMIZED_VERT");
+    _glfw.x11.NET_WM_STATE_SKIP_TASKBAR =
+        getSupportedAtom(supportedAtoms, atomCount, "_NET_WM_STATE_SKIP_TASKBAR");
+    _glfw.x11.NET_WM_STATE_SKIP_PAGER =
+        getSupportedAtom(supportedAtoms, atomCount, "_NET_WM_STATE_SKIP_PAGER");
     _glfw.x11.NET_WM_STATE_MAXIMIZED_HORZ =
         getSupportedAtom(supportedAtoms, atomCount, "_NET_WM_STATE_MAXIMIZED_HORZ");
     _glfw.x11.NET_WM_STATE_DEMANDS_ATTENTION =
@@ -441,6 +445,8 @@ static void detectEWMH(void)
         getSupportedAtom(supportedAtoms, atomCount, "_NET_WM_FULLSCREEN_MONITORS");
     _glfw.x11.NET_WM_WINDOW_TYPE =
         getSupportedAtom(supportedAtoms, atomCount, "_NET_WM_WINDOW_TYPE");
+    _glfw.x11.NET_WM_WINDOW_TYPE_UTILITY =
+        getSupportedAtom(supportedAtoms, atomCount, "_NET_WM_WINDOW_TYPE_UTILITY");
     _glfw.x11.NET_WM_WINDOW_TYPE_NORMAL =
         getSupportedAtom(supportedAtoms, atomCount, "_NET_WM_WINDOW_TYPE_NORMAL");
     _glfw.x11.NET_WORKAREA =
