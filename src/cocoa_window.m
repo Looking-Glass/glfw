@@ -308,7 +308,6 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (void)windowDidBecomeKey:(NSNotification *)notification
 {
-    //NSLog(@"Window became key");
     if (_glfw.ns.disabledCursorWindow == window)
         _glfwCenterCursorInContentArea(window);
 
@@ -316,19 +315,8 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
     updateCursorMode(window);
 }
 
-- (void)windowDidResignMain:(NSNotification *)notification
-{
-//    NSLog(@"Window resigned main");
-}
-
-- (void)windowDidBecomeMain:(NSNotification *)notification
-{
-//    NSLog(@"Window became main");
-}
-
 - (void)windowDidResignKey:(NSNotification *)notification
 {
-    //NSLog(@"Window resigned key");
     if (window->monitor && window->autoIconify)
         _glfwPlatformIconifyWindow(window);
 
@@ -426,7 +414,6 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (void)mouseDown:(NSEvent *)event
 {
-    //NSLog(@"Mouse clicked");
     _glfwInputMouseClick(window,
                          GLFW_MOUSE_BUTTON_LEFT,
                          GLFW_PRESS,
@@ -515,7 +502,6 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 - (void)mouseExited:(NSEvent *)event
 {
 
-//NSLog(@"Mouse exited");
     if (window->cursorMode == GLFW_CURSOR_HIDDEN)
         showCursor(window);
 
@@ -524,7 +510,6 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (void)mouseEntered:(NSEvent *)event
 {
-//NSLog(@"Mouse entered");
     if (window->cursorMode == GLFW_CURSOR_HIDDEN)
         hideCursor(window);
 
@@ -878,12 +863,14 @@ static GLFWbool createNativeWindow(_GLFWwindow* window,
     [window->ns.object setDelegate:window->ns.delegate];
     [window->ns.object setAcceptsMouseMovedEvents:YES];
     [window->ns.object setRestorable:NO];
-
+    if (wndconfig->hideFromTaskbar)
+        [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
+    else
+        [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101200
     if ([window->ns.object respondsToSelector:@selector(setTabbingMode:)])
         [window->ns.object setTabbingMode:NSWindowTabbingModeDisallowed];
 #endif
-
     _glfwPlatformGetWindowSize(window, &window->ns.width, &window->ns.height);
     _glfwPlatformGetFramebufferSize(window, &window->ns.fbWidth, &window->ns.fbHeight);
 

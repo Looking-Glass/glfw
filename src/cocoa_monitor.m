@@ -251,16 +251,12 @@ void _glfwPollMonitorsNS(void)
     uint32_t displayCount;
     CGGetOnlineDisplayList(0, NULL, &displayCount);
     CGDirectDisplayID* displays = calloc(displayCount, sizeof(CGDirectDisplayID));
-//    NSLog(@"Display callback, got %u displays",displayCount);
     CGGetOnlineDisplayList(displayCount, displays, &displayCount);
-    int a = 0;
-    int b = 0;
     for (uint32_t i = 0;  i < _glfw.monitorCount;  i++)
         _glfw.monitors[i]->ns.screen = nil;
 
     _GLFWmonitor** disconnected = NULL;
     uint32_t disconnectedCount = _glfw.monitorCount;
-//    NSLog(@"Number of displays currently connected: %u",disconnectedCount);
     if (disconnectedCount)
     {
         disconnected = calloc(_glfw.monitorCount, sizeof(_GLFWmonitor*));
@@ -272,7 +268,6 @@ void _glfwPollMonitorsNS(void)
     // For each display that's online....
     for (uint32_t i = 0;  i < displayCount;  i++)
     {
-//        NSLog(@"Checking display %u against %u previous...",i, disconnectedCount);
         if (CGDisplayIsAsleep(displays[i]))
             continue;
 
@@ -289,12 +284,6 @@ void _glfwPollMonitorsNS(void)
             {
                 if (disconnected[j]->ns.unitNumber == unitNumber)
                 {
-/*                  NSLog(@"We already know about display at index %u. (unit number %u)", j, unitNumber);
-                    if (displays[i] == disconnected[j]->ns.displayID)
-                    {
-                        NSLog(@"Display IDs match, too.");
-                    }
-                    else NSLog(@"Uh oh, but display IDs don't match.");*/
                     disconnected[j] = NULL;
                     found = true;
                     break;
@@ -311,8 +300,6 @@ void _glfwPollMonitorsNS(void)
         _GLFWmonitor* monitor = _glfwAllocMonitor(name, size.width, size.height);
         monitor->ns.displayID  = displays[i];
         monitor->ns.unitNumber = unitNumber;
-        a += 1;
-//        NSLog(@"Found a new display with name: %s, unit number %i, index %i",name, unitNumber, i);
         free(name);
         _glfwInputMonitor(monitor, GLFW_CONNECTED, _GLFW_INSERT_LAST);
     }
@@ -320,15 +307,12 @@ void _glfwPollMonitorsNS(void)
     for (uint32_t i = 0;  i < disconnectedCount;  i++)
     {
         if (disconnected[i]) {
-            b += 1;
- //           NSLog(@"Disconnecting display %i...", i);
             _glfwInputMonitor(disconnected[i], GLFW_DISCONNECTED, 0);
         }
     }
 
     free(disconnected);
     free(displays);
-//    NSLog(@"Function ended. %i displays connected, %i displays disconnected.", a, b);
 }
 
 // Change the current video mode
