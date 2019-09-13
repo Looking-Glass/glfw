@@ -49,6 +49,7 @@
 //
 static void handleKeyEvent(_GLFWjoystick* js, int code, int value)
 {
+    if (code - BTN_MISC < 0) return;
     _glfwInputJoystickButton(js,
                              js->linjs.keyMap[code - BTN_MISC],
                              value ? GLFW_PRESS : GLFW_RELEASE);
