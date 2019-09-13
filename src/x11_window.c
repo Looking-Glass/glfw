@@ -652,15 +652,27 @@ static GLFWbool createNativeWindow(_GLFWwindow* window,
     if (!wndconfig->decorated)
         _glfwPlatformSetWindowDecorated(window, GLFW_FALSE);
 
-    if (_glfw.x11.NET_WM_STATE && !window->monitor)
+    if (_glfw.x11.NET_WM_STATE )
     {
-        Atom states[5];
+        Atom states[6];
         int count = 0;
+        if (!window->monitor){
+            if (wndconfig->floating)
+            {
+                if (_glfw.x11.NET_WM_STATE_ABOVE)
+                    states[count++] = _glfw.x11.NET_WM_STATE_ABOVE;
+            }
 
-        if (wndconfig->floating)
-        {
-            if (_glfw.x11.NET_WM_STATE_ABOVE)
-                states[count++] = _glfw.x11.NET_WM_STATE_ABOVE;
+            if (wndconfig->maximized)
+            {
+                if (_glfw.x11.NET_WM_STATE_MAXIMIZED_VERT &&
+                    _glfw.x11.NET_WM_STATE_MAXIMIZED_HORZ)
+                {
+                    states[count++] = _glfw.x11.NET_WM_STATE_MAXIMIZED_VERT;
+                    states[count++] = _glfw.x11.NET_WM_STATE_MAXIMIZED_HORZ;
+                    window->x11.maximized = GLFW_TRUE;
+                }
+            }
         }
 
         if (wndconfig->hideFromTaskbar)
@@ -668,17 +680,7 @@ static GLFWbool createNativeWindow(_GLFWwindow* window,
             if (_glfw.x11.NET_WM_STATE_SKIP_TASKBAR && _glfw.x11.NET_WM_STATE_SKIP_PAGER ){
                 states[count++] = _glfw.x11.NET_WM_STATE_SKIP_PAGER;
                 states[count++] = _glfw.x11.NET_WM_STATE_SKIP_TASKBAR;
-            }
-        }
-
-        if (wndconfig->maximized)
-        {
-            if (_glfw.x11.NET_WM_STATE_MAXIMIZED_VERT &&
-                _glfw.x11.NET_WM_STATE_MAXIMIZED_HORZ)
-            {
-                states[count++] = _glfw.x11.NET_WM_STATE_MAXIMIZED_VERT;
-                states[count++] = _glfw.x11.NET_WM_STATE_MAXIMIZED_HORZ;
-                window->x11.maximized = GLFW_TRUE;
+                states[count++] = _glfw.x11.NET_WM_STATE_STICKY;
             }
         }
 
@@ -715,10 +717,6 @@ static GLFWbool createNativeWindow(_GLFWwindow* window,
     if (_glfw.x11.NET_WM_WINDOW_TYPE)
     {
         Atom type = _glfw.x11.NET_WM_WINDOW_TYPE_NORMAL;
-        if (wndconfig->hideFromTaskbar && _glfw.x11.NET_WM_WINDOW_TYPE_UTILITY)
-        {
-            type = _glfw.x11.NET_WM_WINDOW_TYPE_UTILITY;
-        }
         XChangeProperty(_glfw.x11.display, window->x11.handle,
                         _glfw.x11.NET_WM_WINDOW_TYPE, XA_ATOM, 32,
                         PropModeReplace, (unsigned char*) &type, 1);
@@ -2366,8 +2364,24 @@ void _glfwPlatformShowWindow(_GLFWwindow* window)
 {
     if (_glfwPlatformWindowVisible(window))
         return;
-
     XMapWindow(_glfw.x11.display, window->x11.handle);
+    if (window->hideFromTaskbar){
+        sendEventToWM(window,
+                    _glfw.x11.NET_WM_STATE,
+                    _NET_WM_STATE_ADD,
+                    _glfw.x11.NET_WM_STATE_SKIP_TASKBAR,
+                    0, 1, 0);
+        sendEventToWM(window,
+                    _glfw.x11.NET_WM_STATE,
+                    _NET_WM_STATE_ADD,
+                    _glfw.x11.NET_WM_STATE_STICKY,
+                    0, 1, 0);
+        sendEventToWM(window,
+                    _glfw.x11.NET_WM_STATE,
+                    _NET_WM_STATE_ADD,
+                    _glfw.x11.NET_WM_STATE_SKIP_PAGER,
+                    0, 1, 0);
+    }
     waitForVisibilityNotify(window);
 }
 
