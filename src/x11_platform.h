@@ -252,6 +252,8 @@ typedef struct _GLFWlibraryX11
     Atom            NET_WM_WINDOW_TYPE;
     Atom            NET_WM_WINDOW_TYPE_NORMAL;
     Atom            NET_WM_WINDOW_TYPE_UTILITY;
+    Atom            NET_WM_WINDOW_TYPE_SPLASH;
+    Atom            NET_WM_WINDOW_TYPE_DOCK;
     Atom            NET_WM_STATE;
     Atom            NET_WM_STATE_ABOVE;
     Atom            NET_WM_STATE_FULLSCREEN;
@@ -259,6 +261,7 @@ typedef struct _GLFWlibraryX11
     Atom            NET_WM_STATE_MAXIMIZED_HORZ;
     Atom            NET_WM_STATE_SKIP_TASKBAR;
     Atom            NET_WM_STATE_SKIP_PAGER;
+    Atom            NET_WM_STATE_STICKY;
     Atom            NET_WM_STATE_DEMANDS_ATTENTION;
     Atom            NET_WM_BYPASS_COMPOSITOR;
     Atom            NET_WM_FULLSCREEN_MONITORS;
