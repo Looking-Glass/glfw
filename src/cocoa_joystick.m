@@ -117,6 +117,97 @@ static void closeJoystick(_GLFWjoystick* js)
     _glfwInputJoystick(js, GLFW_DISCONNECTED);
 }
 
+// Input value callback
+//
+static void inputValueCallback (void* context,
+                                IOReturn valueResult,
+                                void* deviceRef,
+                                IOHIDValueRef valueRef)
+{
+    _GLFWjoystick* js;
+    CFIndex i;
+    int buttonIndex = 0;
+
+    if (kIOReturnSuccess != valueResult)
+        return;
+
+    js = (_GLFWjoystick*)context;
+    if (!js)
+        return;
+    if (!js->present)
+        return;
+
+    IOHIDElementRef elementRef = IOHIDValueGetElement(valueRef);
+
+    for (i = 0;  i < CFArrayGetCount(js->ns.axes);  i++)
+    {
+        _GLFWjoyelementNS* axis = (_GLFWjoyelementNS*)
+            CFArrayGetValueAtIndex(js->ns.axes, i);
+
+        if (elementRef == axis->native)
+        {
+            long value = getElementValue(js, axis);
+            long readScale = axis->maximum - axis->minimum;
+
+            if (readScale == 0)
+                js->axes[i] = value;
+            else
+                js->axes[i] = (2.f * (value - axis->minimum) / readScale) - 1.f;
+
+            _glfwInputJoystickAxis(js,i,js->axes[i]);
+            return;
+        }
+    }
+
+    for (i = 0;  i < CFArrayGetCount(js->ns.buttons);  i++, buttonIndex++)
+    {
+        _GLFWjoyelementNS* button = (_GLFWjoyelementNS*)
+            CFArrayGetValueAtIndex(js->ns.buttons, i);
+
+        if (elementRef == button->native)
+        {
+            if (getElementValue(js, button))
+                js->buttons[buttonIndex] = GLFW_PRESS;
+            else
+                js->buttons[buttonIndex] = GLFW_RELEASE;
+
+            _glfwInputJoystickButton(js,buttonIndex,js->buttons[buttonIndex]);
+            return;
+        }
+    }
+
+    for (i = 0;  i < CFArrayGetCount(js->ns.hats);  i++, buttonIndex += 4)
+    {
+        _GLFWjoyelementNS* hat = (_GLFWjoyelementNS*)
+            CFArrayGetValueAtIndex(js->ns.hats, i);
+
+        if (elementRef == hat->native)
+        {
+            // Bit fields of button presses for each direction, including nil
+            const int directions[9] = { 1, 3, 2, 6, 4, 12, 8, 9, 0 };
+
+            long j, value = getElementValue(js, hat);
+            if (value < 0 || value > 8)
+                value = 8;
+
+            for (j = 0;  j < 4;  j++)
+            {
+                const unsigned char oldValue = js->buttons[buttonIndex+j];
+
+                if (directions[value] & (1 << j))
+                    js->buttons[buttonIndex+j] = GLFW_PRESS;
+                else
+                    js->buttons[buttonIndex+j] = GLFW_RELEASE;
+
+                // Since we're treating hat switches as buttons, only send events for
+                // the values that have actually changed.
+                if (oldValue != js->buttons[buttonIndex+j])
+                    _glfwInputJoystickButton(js,buttonIndex+j,js->buttons[buttonIndex+j]);
+            }
+        }
+        return;
+    }
+}
 // Callback for user-initiated joystick addition
 //
 static void matchCallback(void* context,
@@ -279,6 +370,8 @@ static void matchCallback(void* context,
     js->ns.axes    = axes;
     js->ns.buttons = buttons;
     js->ns.hats    = hats;
+
+    IOHIDDeviceRegisterInputValueCallback(device,inputValueCallback,(void*)js);
 
     _glfwInputJoystick(js, GLFW_CONNECTED);
 }

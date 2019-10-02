@@ -380,6 +380,8 @@ void _glfwInputJoystick(_GLFWjoystick* js, int event)
 void _glfwInputJoystickAxis(_GLFWjoystick* js, int axis, float value)
 {
     js->axes[axis] = value;
+    if (_glfw.callbacks.joystick_axis)
+        _glfw.callbacks.joystick_axis(js, axis, value);
 }
 
 // Notifies shared code of the new value of a joystick button
@@ -387,6 +389,8 @@ void _glfwInputJoystickAxis(_GLFWjoystick* js, int axis, float value)
 void _glfwInputJoystickButton(_GLFWjoystick* js, int button, char value)
 {
     js->buttons[button] = value;
+    if (_glfw.callbacks.joystick_button)
+        _glfw.callbacks.joystick_button(js, button, value);
 }
 
 // Notifies shared code of the new value of a joystick hat
@@ -1314,6 +1318,20 @@ GLFWAPI void glfwSetClipboardString(GLFWwindow* handle, const char* string)
 
     _GLFW_REQUIRE_INIT();
     _glfwPlatformSetClipboardString(string);
+}
+
+GLFWAPI GLFWjoystickbuttonfun glfwSetJoystickButtonCallback(GLFWjoystickbuttonfun cbfun)
+{
+    _GLFW_REQUIRE_INIT_OR_RETURN(NULL);
+    _GLFW_SWAP_POINTERS(_glfw.callbacks.joystick_button, cbfun);
+    return cbfun;
+}
+
+GLFWAPI GLFWjoystickaxisfun glfwSetJoystickAxisCallback(GLFWjoystickaxisfun cbfun)
+{
+    _GLFW_REQUIRE_INIT_OR_RETURN(NULL);
+    _GLFW_SWAP_POINTERS(_glfw.callbacks.joystick_axis, cbfun);
+    return cbfun;
 }
 
 GLFWAPI const char* glfwGetClipboardString(GLFWwindow* handle)
