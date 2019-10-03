@@ -381,7 +381,7 @@ void _glfwInputJoystickAxis(_GLFWjoystick* js, int axis, float value)
 {
     js->axes[axis] = value;
     if (_glfw.callbacks.joystick_axis)
-        _glfw.callbacks.joystick_axis(js, axis, value);
+        _glfw.callbacks.joystick_axis(js-_glfw.joysticks, axis, value);
 }
 
 // Notifies shared code of the new value of a joystick button
@@ -390,7 +390,7 @@ void _glfwInputJoystickButton(_GLFWjoystick* js, int button, char value)
 {
     js->buttons[button] = value;
     if (_glfw.callbacks.joystick_button)
-        _glfw.callbacks.joystick_button(js, button, value);
+        _glfw.callbacks.joystick_button(js-_glfw.joysticks, button, value);
 }
 
 // Notifies shared code of the new value of a joystick hat
