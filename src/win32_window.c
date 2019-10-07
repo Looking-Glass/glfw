@@ -71,7 +71,7 @@ static DWORD getWindowExStyle(const _GLFWwindow* window)
     DWORD style = WS_EX_APPWINDOW;
     if (window->hideFromTaskbar)
     {
-        style = WS_EX_TOOLWINDOW;
+	style = WS_EX_NOACTIVATE;
     }
 
     if (window->monitor || window->floating)
@@ -414,8 +414,10 @@ static void updateFramebufferTransparency(const _GLFWwindow* window)
             // Using a color key not equal to black to fix the trailing
             // issue.  When set to black, something is making the hit test
             // not resize with the window frame.
-            SetLayeredWindowAttributes(window->win32.handle,
-                                       RGB(0, 193, 48), 255, LWA_COLORKEY);
+
+            SetLayeredWindowAttributes(window->win32.handle, 0, 254, LWA_ALPHA);
+            // SetLayeredWindowAttributes(window->win32.handle,
+            //                            RGB(0, 193, 48), 255, LWA_COLORKEY);
         }
 
         DeleteObject(region);
