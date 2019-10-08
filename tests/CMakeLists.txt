@@ -42,6 +42,12 @@ add_executable(title WIN32 MACOSX_BUNDLE title.c ${GLAD_GL})
 add_executable(triangle-vulkan WIN32 triangle-vulkan.c ${ICON} ${GLAD_VULKAN})
 add_executable(windows WIN32 MACOSX_BUNDLE windows.c ${GETOPT} ${GLAD_GL})
 
+if (WIN32)
+    add_executable(native WIN32 native.c ${GLAD})
+else()
+    message(FATAL_ERROR "This branch only makes sense on Win32 at the moment")
+endif()
+
 target_link_libraries(empty "${CMAKE_THREAD_LIBS_INIT}")
 target_link_libraries(threads "${CMAKE_THREAD_LIBS_INIT}")
 if (RT_LIBRARY)
@@ -50,7 +56,7 @@ if (RT_LIBRARY)
 endif()
 
 set(WINDOWS_BINARIES empty gamma icon inputlag joysticks opacity tearing
-                     threads timeout title triangle-vulkan windows)
+                     threads timeout title triangle-vulkan windows native)
 set(CONSOLE_BINARIES clipboard events msaa glfwinfo iconify monitors reopen
                      cursor)
 

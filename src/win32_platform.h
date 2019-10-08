@@ -314,6 +314,8 @@ typedef struct _GLFWwindowWin32
     GLFWbool            maximized;
     // Whether to enable framebuffer transparency on DWM
     GLFWbool            transparent;
+    GLFWbool            external;
+    LONG_PTR            externalWindowProc;
     GLFWbool            scaleToMonitor;
     GLFWbool            hideFromTaskbar;
 
