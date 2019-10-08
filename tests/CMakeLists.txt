@@ -43,7 +43,7 @@ add_executable(triangle-vulkan WIN32 triangle-vulkan.c ${ICON} ${GLAD_VULKAN})
 add_executable(windows WIN32 MACOSX_BUNDLE windows.c ${GETOPT} ${GLAD_GL})
 
 if (WIN32)
-    add_executable(native WIN32 native.c ${GLAD})
+	add_executable(native WIN32 native.c ${GLAD_GL})
 else()
     message(FATAL_ERROR "This branch only makes sense on Win32 at the moment")
 endif()
