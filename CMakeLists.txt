@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 project(GLFW VERSION 3.4.0 LANGUAGES C)
 
 set(CMAKE_LEGACY_CYGWIN_WIN32 OFF)
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.11)
 
 if (POLICY CMP0054)
     cmake_policy(SET CMP0054 NEW)
@@ -21,7 +22,7 @@ endif()
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" ${GLFW_STANDALONE})
 option(GLFW_BUILD_TESTS "Build the GLFW test programs" ${GLFW_STANDALONE})
-option(GLFW_BUILD_DOCS "Build the GLFW documentation" ON)
+option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
 option(GLFW_INSTALL "Generate installation target" ON)
 option(GLFW_VULKAN_STATIC "Assume the Vulkan loader is linked with the application" OFF)
 

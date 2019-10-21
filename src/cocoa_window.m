@@ -560,9 +560,8 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
                                           NSTrackingActiveAlways | 
                                           NSTrackingEnabledDuringMouseDrag |
                                           NSTrackingCursorUpdate |
-                                          NSTrackingInVisibleRect |
-                                          NSTrackingAssumeInside;
-/*
+                                          NSTrackingInVisibleRect;
+    /*
     const NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited |
                                           NSTrackingActiveInKeyWindow |
                                           NSTrackingEnabledDuringMouseDrag |
