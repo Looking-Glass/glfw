@@ -318,6 +318,7 @@ typedef struct _GLFWwindowWin32
     LONG_PTR            externalWindowProc;
     GLFWbool            scaleToMonitor;
     GLFWbool            hideFromTaskbar;
+    GLFWbool            keymenu;
 
     // The last received cursor position, regardless of source
     int                 lastCursorPosX, lastCursorPosY;
