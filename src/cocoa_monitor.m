@@ -342,6 +342,7 @@ void _glfwPollMonitorsNS(void)
             {
                 if (disconnected[j]->ns.unitNumber == unitNumber)
                 {
+                    _glfwInputMonitor(disconnected[j], 3, GLFW_DONT_CARE);
                     disconnected[j] = NULL;
                     found = true;
                     break;
