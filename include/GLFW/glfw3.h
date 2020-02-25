@@ -843,6 +843,7 @@ extern "C" {
  */
 #define GLFW_FOCUS_ON_SHOW          0x0002000C
 #define GLFW_HIDE_FROM_TASKBAR      0x0002000D
+#define GLFW_MOUSE_PASSTHRU         0x0002000E
 
 /*! @brief Framebuffer bit depth hint.
  *
@@ -3613,7 +3614,7 @@ GLFWAPI int glfwGetWindowAttrib(GLFWwindow* window, int attrib);
  *  [GLFW_FLOATING](@ref GLFW_FLOATING_attrib),
  *  [GLFW_AUTO_ICONIFY](@ref GLFW_AUTO_ICONIFY_attrib) and
  *  [GLFW_FOCUS_ON_SHOW](@ref GLFW_FOCUS_ON_SHOW_attrib).
- *
+ *  [GLFW_MOUSE_PASSTHRU](@ref GLFW_MOUSE_PASSTHRU_attrib)
  *  Some of these attributes are ignored for full screen windows.  The new
  *  value will take effect if the window is later made windowed.
  *
