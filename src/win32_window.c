@@ -482,7 +482,7 @@ static void acquireMonitor(_GLFWwindow* window)
     if (!window->monitor->window)
         _glfw.win32.acquiredMonitorCount++;
 
-    _glfwSetVideoModeWin32(window->monitor, &window->videoMode);
+    _glfwSetVideoModeWin32(window->monitor, &window->videoMode, GLFW_FALSE);
     _glfwInputMonitorWindow(window->monitor, window);
 }
 

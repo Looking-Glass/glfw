@@ -584,6 +584,12 @@ GLFWbool _glfwPlatformGetGammaRamp(_GLFWmonitor* monitor, GLFWgammaramp* ramp)
     } // autoreleasepool
 }
 
+void _glfwPlatformForceVideoMode(_GLFWmonitor* monitor, const GLFWvidmode* desired)
+{
+    _glfwSetVideoModeNS(monitor, desired);
+    monitor->ns.previousMode == NULL;
+}
+
 void _glfwPlatformSetGammaRamp(_GLFWmonitor* monitor, const GLFWgammaramp* ramp)
 {
     @autoreleasepool {

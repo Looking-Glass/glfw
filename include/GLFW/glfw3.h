@@ -2392,6 +2392,7 @@ GLFWAPI GLFWmonitorfun glfwSetMonitorCallback(GLFWmonitorfun callback);
  *  @ingroup monitor
  */
 GLFWAPI const GLFWvidmode* glfwGetVideoModes(GLFWmonitor* monitor, int* count);
+GLFWAPI void glfwForceVideoMode(GLFWmonitor* monitor, const GLFWvidmode* desired);
 
 /*! @brief Returns the current mode of the specified monitor.
  *

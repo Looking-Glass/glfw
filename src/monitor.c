@@ -513,6 +513,16 @@ GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* handle)
     return &monitor->currentRamp;
 }
 
+GLFWAPI void glfwForceVideoMode(GLFWmonitor* handle, const GLFWvidmode* desired)
+{
+    _GLFWmonitor* monitor = (_GLFWmonitor*) handle;
+    GLFWvidmode* vidmode = (GLFWvidmode*) desired;
+    assert(monitor != NULL);
+    assert(vidmode != NULL);
+
+    _glfwPlatformForceVideoMode(monitor, vidmode);
+}
+
 GLFWAPI void glfwSetGammaRamp(GLFWmonitor* handle, const GLFWgammaramp* ramp)
 {
     _GLFWmonitor* monitor = (_GLFWmonitor*) handle;

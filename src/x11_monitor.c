@@ -519,6 +519,12 @@ void _glfwPlatformGetVideoMode(_GLFWmonitor* monitor, GLFWvidmode* mode)
     }
 }
 
+void _glfwPlatformForceVideoMode(_GLFWmonitor* monitor, const GLFWvidmode* desired)
+{
+    _glfwSetVideoModeX11(monitor, desired)
+    monitor->x11.oldMode = None;
+}
+
 GLFWbool _glfwPlatformGetGammaRamp(_GLFWmonitor* monitor, GLFWgammaramp* ramp)
 {
     if (_glfw.x11.randr.available && !_glfw.x11.randr.gammaBroken)

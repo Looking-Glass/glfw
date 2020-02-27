@@ -244,7 +244,7 @@ void _glfwPollMonitorsWin32(void)
 
 // Change the current video mode
 //
-void _glfwSetVideoModeWin32(_GLFWmonitor* monitor, const GLFWvidmode* desired)
+void _glfwSetVideoModeWin32(_GLFWmonitor* monitor, const GLFWvidmode* desired, GLFWbool permanent)
 {
     GLFWvidmode current;
     const GLFWvidmode* best;
@@ -271,7 +271,7 @@ void _glfwSetVideoModeWin32(_GLFWmonitor* monitor, const GLFWvidmode* desired)
     result = ChangeDisplaySettingsExW(monitor->win32.adapterName,
                                       &dm,
                                       NULL,
-                                      CDS_FULLSCREEN,
+                                      ((permanent ? CDS_UPDATEREGISTRY : 0) | CDS_FULLSCREEN),
                                       NULL);
     if (result == DISP_CHANGE_SUCCESSFUL)
         monitor->win32.modeChanged = GLFW_TRUE;
@@ -491,6 +491,12 @@ GLFWbool _glfwPlatformGetGammaRamp(_GLFWmonitor* monitor, GLFWgammaramp* ramp)
     memcpy(ramp->blue,  values[2], sizeof(values[2]));
 
     return GLFW_TRUE;
+}
+
+void _glfwPlatformForceVideoMode(_GLFWmonitor* monitor, const GLFWvidmode* desired)
+{
+    _glfwSetVideoModeWin32(monitor, desired, GLFW_TRUE);
+    monitor->win32.modeChanged = GLFW_FALSE;
 }
 
 void _glfwPlatformSetGammaRamp(_GLFWmonitor* monitor, const GLFWgammaramp* ramp)
