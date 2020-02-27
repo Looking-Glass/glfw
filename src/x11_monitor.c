@@ -1,4 +1,4 @@
-c//========================================================================
+//========================================================================
 // GLFW 3.4 X11 - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2002-2006 Marcus Geelnard
@@ -521,7 +521,7 @@ void _glfwPlatformGetVideoMode(_GLFWmonitor* monitor, GLFWvidmode* mode)
 
 void _glfwPlatformForceVideoMode(_GLFWmonitor* monitor, const GLFWvidmode* desired)
 {
-    _glfwSetVideoModeX11(monitor, desired)
+    _glfwSetVideoModeX11(monitor, desired);
     monitor->x11.oldMode = None;
 }
 
