@@ -184,6 +184,7 @@ void _glfwPollMonitorsWin32(void)
                     wcscmp(disconnected[i]->win32.displayName,
                            display.DeviceName) == 0)
                 {
+                    _glfwInputMonitor(disconnected[i], 3, GLFW_DONT_CARE);
                     disconnected[i] = NULL;
                     break;
                 }

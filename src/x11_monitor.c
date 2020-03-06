@@ -138,6 +138,7 @@ void _glfwPollMonitorsX11(void)
                 if (disconnected[j] &&
                     disconnected[j]->x11.output == sr->outputs[i])
                 {
+                    _glfwInputMonitor(disconnected[j], 3, GLFW_DONT_CARE);
                     disconnected[j] = NULL;
                     break;
                 }
