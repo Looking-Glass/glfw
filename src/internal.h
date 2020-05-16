@@ -574,11 +574,12 @@ struct _GLFWlibrary
     } vk;
 
     struct {
-        GLFWmonitorfun  monitor;
+        GLFWmonitorfun        monitor;
+        GLFWjoystickfun       joystick;
+        GLFWjoystickaxisfun   joystick_axis;
         GLFWjoystickbuttonfun joystick_button;
-        GLFWjoystickaxisfun joystick_axis;
-        GLFWjoystickfun joystick;
-    
+        GLFWjoystickhatfun    joystick_hat;
+        GLFWgamepadstatefun   gamepad_state;
     } callbacks;
 
     // This is defined in the window API's platform.h
@@ -780,6 +781,7 @@ _GLFWjoystick* _glfwAllocJoystick(const char* name,
                                   int hatCount);
 void _glfwFreeJoystick(_GLFWjoystick* js);
 void _glfwCenterCursorInContentArea(_GLFWwindow* window);
+void _glfwPollAllJoysticks();
 
 GLFWbool _glfwInitVulkan(int mode);
 void _glfwTerminateVulkan(void);

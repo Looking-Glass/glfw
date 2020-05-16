@@ -60,26 +60,36 @@
 // Wait for data to arrive using select
 // This avoids blocking other threads via the per-display Xlib lock that also
 // covers GLX functions
-//
 static GLFWbool waitForEvent(double* timeout)
 {
     fd_set fds;
     const int fd = ConnectionNumber(_glfw.x11.display);
-    int count = fd + 1;
-
-#if defined(__linux__)
-    if (_glfw.linjs.inotify > fd)
-        count = _glfw.linjs.inotify + 1;
-#endif
     for (;;)
     {
+        int count = fd + 1;
         FD_ZERO(&fds);
         FD_SET(fd, &fds);
+
 #if defined(__linux__)
         if (_glfw.linjs.inotify > 0)
-            FD_SET(_glfw.linjs.inotify, &fds);
-#endif
+        {
+            if (_glfw.linjs.inotify >= count )
+                count = _glfw.linjs.inotify + 1;
 
+            FD_SET(_glfw.linjs.inotify, &fds);
+        }
+
+        for (int jid = 0; jid <= GLFW_JOYSTICK_LAST;  jid++)
+        {
+            if (_glfw.joysticks[jid].present) {
+                if  (_glfw.joysticks[jid].linjs.fd >= count)
+                    count = _glfw.joysticks[jid].linjs.fd + 1;
+
+                FD_SET(_glfw.joysticks[jid].linjs.fd, &fds);
+            }
+        }
+
+#endif
         if (timeout)
         {
             const long seconds = (long) *timeout;
@@ -2808,6 +2818,7 @@ void _glfwPlatformPollEvents(void)
 
 #if defined(__linux__)
     _glfwDetectJoystickConnectionLinux();
+    _glfwPollAllJoysticks();
 #endif
     XPending(_glfw.x11.display);
 
@@ -2836,23 +2847,34 @@ void _glfwPlatformPollEvents(void)
     XFlush(_glfw.x11.display);
 }
 
-void _glfwPlatformWaitEvents(void)
+static GLFWbool waitForAndPollEvents(double * timeout)
 {
-    while (!XPending(_glfw.x11.display))
-        waitForEvent(NULL);
+    GLFWbool result = GLFW_FALSE;
+    for (;;)
+    {
+        int xpending = XPending(_glfw.x11.display);
+        GLFWbool event = waitForEvent(timeout);
+        // We cannot use the boolean shortcut here, since
+        // waiting for events might have a side effect.
+        if (event || xpending )
+        {
+            result = GLFW_TRUE;
+            break;
+        }
+    }
 
     _glfwPlatformPollEvents();
+    return result;
+}
+
+void _glfwPlatformWaitEvents(void)
+{
+    waitForAndPollEvents(NULL);
 }
 
 void _glfwPlatformWaitEventsTimeout(double timeout)
 {
-    while (!XPending(_glfw.x11.display))
-    {
-        if (!waitForEvent(&timeout))
-            break;
-    }
-
-    _glfwPlatformPollEvents();
+    waitForAndPollEvents(&timeout);
 }
 
 void _glfwPlatformPostEmptyEvent(void)
