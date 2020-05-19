@@ -1248,16 +1248,6 @@ typedef struct GLFWwindow GLFWwindow;
  */
 typedef struct GLFWcursor GLFWcursor;
 
-/*! @brief Gamepad state object.
- *
- *  Gamepad state object, predeclared here.
- *
- *  @since Added in version 3.4.
- *
- *  @ingroup input
- */
-typedef struct GLFWgamepadstate GLFWgamepadstate;
-
 /*! @brief The function pointer type for error callbacks.
  *
  *  This is the function pointer type for error callbacks.  An error callback
