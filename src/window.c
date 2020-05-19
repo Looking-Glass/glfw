@@ -1086,14 +1086,14 @@ GLFWAPI GLFWwindowcontentscalefun glfwSetWindowContentScaleCallback(GLFWwindow* 
 GLFWAPI void glfwPollEvents(void)
 {
     _GLFW_REQUIRE_INIT();
-    // _glfwPollAllJoysticks();
+    _glfwPollAllJoysticks();
     _glfwPlatformPollEvents();
 }
 
 GLFWAPI void glfwWaitEvents(void)
 {
     _GLFW_REQUIRE_INIT();
-    // _glfwPollAllJoysticks();
+    _glfwPollAllJoysticks();
     _glfwPlatformWaitEvents();
 }
 
