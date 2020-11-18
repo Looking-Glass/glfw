@@ -215,6 +215,7 @@ GLFWAPI GLFWwindow* glfwAttachWin32Window(HWND handle, GLFWwindow* share);
 GLFWAPI HGLRC glfwGetWGLContext(GLFWwindow* window);
 #endif
 
+GLFWAPI unsigned char* glfwGetCocoaDisplayEDID(GLFWmonitor* monitor);
 #if defined(GLFW_EXPOSE_NATIVE_COCOA)
 /*! @brief Returns the `CGDirectDisplayID` of the specified monitor.
  *

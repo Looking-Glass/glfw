@@ -114,6 +114,7 @@ static char* getDisplayName(CGDirectDisplayID displayID)
     return name;
 }
 
+
 // Check whether the display mode should be included in enumeration
 //
 static GLFWbool modeIsGood(CGDisplayModeRef mode)
@@ -626,3 +627,66 @@ GLFWAPI CGDirectDisplayID glfwGetCocoaMonitor(GLFWmonitor* handle)
     return monitor->ns.displayID;
 }
 
+GLFWAPI unsigned char* glfwGetCocoaDisplayEDID(GLFWmonitor* handle)
+{
+    _GLFWmonitor* monitor = (_GLFWmonitor*) handle;
+    CGDirectDisplayID displayID = monitor->ns.displayID;
+    io_iterator_t it;
+    io_service_t service;
+    CFDictionaryRef info;
+
+    if (IOServiceGetMatchingServices(kIOMasterPortDefault,
+                                     IOServiceMatching("IODisplayConnect"),
+                                     &it) != 0)
+    {
+        // This may happen if a desktop Mac is running headless
+        return NULL;
+    }
+
+    while ((service = IOIteratorNext(it)) != 0)
+    {
+        info = IODisplayCreateInfoDictionary(service,
+                                             kIODisplayOnlyPreferredName);
+
+        CFNumberRef vendorIDRef =
+            CFDictionaryGetValue(info, CFSTR(kDisplayVendorID));
+        CFNumberRef productIDRef =
+            CFDictionaryGetValue(info, CFSTR(kDisplayProductID));
+        if (!vendorIDRef || !productIDRef)
+        {
+            CFRelease(info);
+            continue;
+        }
+
+        unsigned int vendorID, productID;
+        CFNumberGetValue(vendorIDRef, kCFNumberIntType, &vendorID);
+        CFNumberGetValue(productIDRef, kCFNumberIntType, &productID);
+
+        if (CGDisplayVendorNumber(displayID) == vendorID &&
+            CGDisplayModelNumber(displayID) == productID)
+        {
+            // Info dictionary is used and freed below
+            break;
+        }
+
+        CFRelease(info);
+    }
+
+    IOObjectRelease(it);
+
+    if (!service)
+    {
+        _glfwInputError(GLFW_PLATFORM_ERROR,
+                        "Cocoa: Failed to find service port for display");
+        return NULL;
+    }
+
+    CFDataRef edid =
+        CFDictionaryGetValue(info, CFSTR(kIODisplayEDIDKey));
+
+    size_t len = CFDataGetLength(edid);
+    unsigned char* out = calloc(len, 1);
+    memcpy(out, CFDataGetBytePtr(edid), len);
+    CFRelease(info);
+    return out;
+}
