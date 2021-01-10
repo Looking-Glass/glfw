@@ -894,8 +894,6 @@ extern "C" {
  *  [window attribute](@ref GLFW_FOCUS_ON_SHOW_attrib).
  */
 #define GLFW_FOCUS_ON_SHOW          0x0002000C
-#define GLFW_HIDE_FROM_TASKBAR      0x0002000D
-#define GLFW_MOUSE_PASSTHRU         0x0002000E
 
 /*! @brief Mouse input transparency window hint and attribute
  *
@@ -903,6 +901,9 @@ extern "C" {
  *  [window attribute](@ref GLFW_MOUSE_PASSTHROUGH_attrib).
  */
 #define GLFW_MOUSE_PASSTHROUGH      0x0002000D
+
+// evan's addition
+#define GLFW_HIDE_FROM_TASKBAR      0x0002000E
 
 /*! @brief Framebuffer bit depth hint.
  *
