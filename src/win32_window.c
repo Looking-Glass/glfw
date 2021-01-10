@@ -69,7 +69,7 @@ static DWORD getWindowExStyle(const _GLFWwindow* window)
     DWORD style = WS_EX_APPWINDOW;
     if (window->hideFromTaskbar)
     {
-	style = WS_EX_NOACTIVATE;
+	style = WS_EX_TOOLWINDOW;
     }
 
     if (window->monitor || window->floating)
@@ -1202,12 +1202,6 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg,
 
             DragFinish(drop);
             return 0;
-        }
-        case WM_NCHITTEST:
-        {
-            if (window->mousePassthru)
-                return HTTRANSPARENT;
-            break;
         }
     }
 

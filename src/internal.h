@@ -273,7 +273,6 @@ struct _GLFWwndconfig
     GLFWbool      mousePassthrough;
     GLFWbool      scaleToMonitor;
     GLFWbool      hideFromTaskbar;
-    GLFWbool      mousePassthru;
     struct {
         GLFWbool  retina;
         char      frameName[256];
