@@ -186,6 +186,8 @@ void _glfwPollMonitorsWin32(void)
                 {
                     _glfwInputMonitor(disconnected[i], 3, GLFW_DONT_CARE);
                     disconnected[i] = NULL;
+                    // handle may have changed, update
+                    EnumDisplayMonitors(NULL, NULL, monitorCallback, (LPARAM) _glfw.monitors[i]);
                     break;
                 }
             }
