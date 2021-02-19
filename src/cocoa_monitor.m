@@ -39,8 +39,20 @@
 
 // Get the name of the specified display, or NULL
 //
-static char* getDisplayName(CGDirectDisplayID displayID)
+static char* getMonitorName(CGDirectDisplayID displayID, NSScreen* screen)
 {
+    // IOKit doesn't work on Apple Silicon anymore
+    // Luckily, 10.15 introduced -[NSScreen localizedName].
+    // Use it if available, and fall back to IOKit otherwise.
+    if (screen)
+    {
+        if ([screen respondsToSelector:@selector(localizedName)])
+        {
+            NSString* name = [screen valueForKey:@"localizedName"];
+            if (name)
+                return _glfw_strdup([name UTF8String]);
+        }
+    }
     io_iterator_t it;
     io_service_t service;
     CFDictionaryRef info;
@@ -306,14 +318,14 @@ static double getFallbackRefreshRate(CGDirectDisplayID displayID)
 //
 void _glfwPollMonitorsNS(void)
 {
-
     uint32_t displayCount;
     CGGetOnlineDisplayList(0, NULL, &displayCount);
     CGDirectDisplayID* displays = calloc(displayCount, sizeof(CGDirectDisplayID));
     CGGetOnlineDisplayList(displayCount, displays, &displayCount);
+
     for (int i = 0;  i < _glfw.monitorCount;  i++)
         _glfw.monitors[i]->ns.screen = nil;
- 
+
     _GLFWmonitor** disconnected = NULL;
     uint32_t disconnectedCount = _glfw.monitorCount;
     if (disconnectedCount)
@@ -324,42 +336,53 @@ void _glfwPollMonitorsNS(void)
                _glfw.monitorCount * sizeof(_GLFWmonitor*));
     }
 
-    // For each display that's online....
     for (uint32_t i = 0;  i < displayCount;  i++)
     {
         if (CGDisplayIsAsleep(displays[i]))
             continue;
 
+        const uint32_t unitNumber = CGDisplayUnitNumber(displays[i]);
+        NSScreen* screen = nil;
+
+        for (screen in [NSScreen screens])
+        {
+            NSNumber* screenNumber = [screen deviceDescription][@"NSScreenNumber"];
+
+            // HACK: Compare unit numbers instead of display IDs to work around
+            //       display replacement on machines with automatic graphics
+            //       switching
+            if (CGDisplayUnitNumber([screenNumber unsignedIntValue]) == unitNumber)
+                break;
+        }
+
         // HACK: Compare unit numbers instead of display IDs to work around
         //       display replacement on machines with automatic graphics
         //       switching
-        const uint32_t unitNumber = CGDisplayUnitNumber(displays[i]);
-        bool found = false;
-
-        // Check to see if each display has a unit number matching one of the existing ones
-        for (uint32_t j = 0;  j < disconnectedCount;  j++)
+        uint32_t j;
+        for (j = 0;  j < disconnectedCount;  j++)
         {
-            if (disconnected[j])
+            if (disconnected[j] && disconnected[j]->ns.unitNumber == unitNumber)
             {
-                if (disconnected[j]->ns.unitNumber == unitNumber)
-                {
-                    _glfwInputMonitor(disconnected[j], 3, GLFW_DONT_CARE);
-                    disconnected[j] = NULL;
-                    found = true;
-                    break;
-                }
+                _glfwInputMonitor(disconnected[j], 3, GLFW_DONT_CARE);
+                disconnected[j]->ns.screen = screen;
+                disconnected[j] = NULL;
+                break;
             }
         }
-        if (found) continue;
+
+        if (j < disconnectedCount)
+            continue;
 
         const CGSize size = CGDisplayScreenSize(displays[i]);
-        char* name = getDisplayName(displays[i]);
+        char* name = getMonitorName(displays[i], screen);
         if (!name)
             name = _glfw_strdup("Unknown");
 
         _GLFWmonitor* monitor = _glfwAllocMonitor(name, size.width, size.height);
         monitor->ns.displayID  = displays[i];
         monitor->ns.unitNumber = unitNumber;
+        monitor->ns.screen     = screen;
+
         free(name);
 
         CGDisplayModeRef mode = CGDisplayCopyDisplayMode(displays[i]);
@@ -372,9 +395,8 @@ void _glfwPollMonitorsNS(void)
 
     for (uint32_t i = 0;  i < disconnectedCount;  i++)
     {
-        if (disconnected[i]) {
+        if (disconnected[i])
             _glfwInputMonitor(disconnected[i], GLFW_DISCONNECTED, 0);
-        }
     }
 
     free(disconnected);
@@ -615,7 +637,6 @@ void _glfwPlatformSetGammaRamp(_GLFWmonitor* monitor, const GLFWgammaramp* ramp)
     } // autoreleasepool
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 //////                        GLFW native API                       //////
 //////////////////////////////////////////////////////////////////////////
@@ -627,6 +648,7 @@ GLFWAPI CGDirectDisplayID glfwGetCocoaMonitor(GLFWmonitor* handle)
     return monitor->ns.displayID;
 }
 
+// This ONLY works on x86_64
 GLFWAPI unsigned char* glfwGetCocoaDisplayEDID(GLFWmonitor* handle)
 {
     _GLFWmonitor* monitor = (_GLFWmonitor*) handle;
@@ -676,8 +698,8 @@ GLFWAPI unsigned char* glfwGetCocoaDisplayEDID(GLFWmonitor* handle)
 
     if (!service)
     {
-        _glfwInputError(GLFW_PLATFORM_ERROR,
-                        "Cocoa: Failed to find service port for display");
+        // _glfwInputError(GLFW_PLATFORM_ERROR,
+        //                 "Cocoa: Failed to find service port for display");
         return NULL;
     }
 
@@ -690,3 +712,73 @@ GLFWAPI unsigned char* glfwGetCocoaDisplayEDID(GLFWmonitor* handle)
     CFRelease(info);
     return out;
 }
+
+// This ONLY works on arm64
+GLFWAPI bool glfwGetM1DisplayParams(GLFWmonitor* handle, char * name, char * serial, uint32_t * numeric_serial){
+    _GLFWmonitor* monitor = (_GLFWmonitor*) handle;
+    CGDirectDisplayID displayID = monitor->ns.displayID;
+    io_iterator_t it;
+    io_service_t service;
+    bool ret = false;
+
+    if (IOServiceGetMatchingServices(kIOMasterPortDefault, IOServiceMatching("IOMobileFramebuffer"),&it) != 0)
+    {
+        return NULL;
+    }
+    while ((service = IOIteratorNext(it)) != 0)
+    {
+        // NSLog(@"DisplayID props -> VID=%x PID=%x UN=%d SN=%x", CGDisplayVendorNumber(displayID), CGDisplayModelNumber(displayID), CGDisplayUnitNumber(displayID), CGDisplaySerialNumber(displayID));
+        CFDictionaryRef props;
+        kern_return_t t = IORegistryEntryCreateCFProperties(service, &props, kCFAllocatorDefault, kNilOptions);
+        if (t == KERN_SUCCESS) {
+            CFDictionaryRef dispAttributes = CFDictionaryGetValue(props, CFSTR("DisplayAttributes"));
+            if (dispAttributes != NULL) {
+                CFDictionaryRef prodAttributes = CFDictionaryGetValue(dispAttributes, CFSTR("ProductAttributes"));
+                if (prodAttributes != NULL) {
+                    uint32_t uint_val;
+                    CFNumberRef ref = CFDictionaryGetValue(prodAttributes, CFSTR("ProductID"));
+                    if (ref && CFNumberGetValue(ref, kCFNumberSInt32Type, &uint_val) && uint_val==CGDisplayModelNumber(displayID));
+                    else {
+                        CFRelease(ref);
+                        continue;
+                    }
+                    ref = CFDictionaryGetValue(prodAttributes, CFSTR("LegacyManufacturerID"));
+                    if (ref && CFNumberGetValue(ref, kCFNumberSInt32Type, &uint_val) && uint_val==CGDisplayVendorNumber(displayID));
+                    else {
+                        CFRelease(ref);
+                        continue;
+                    }
+                    ref = CFDictionaryGetValue(prodAttributes, CFSTR("SerialNumber"));
+                    if (ref && CFNumberGetValue(ref, kCFNumberSInt32Type, &uint_val) && uint_val==CGDisplaySerialNumber(displayID)) numeric_serial = uint_val;
+                    else {
+                        CFRelease(ref);
+                        continue;
+                    }
+                    CFRelease(ref);
+                    CFStringRef strRef = CFDictionaryGetValue(prodAttributes, CFSTR("ProductName"));
+                    if (strRef && CFStringGetCString(strRef, name, 14, kCFStringEncodingUTF8));
+                    else {
+                        CFRelease(strRef);
+                        continue;
+                    }
+                    strRef = CFDictionaryGetValue(prodAttributes, CFSTR("AlphanumericSerialNumber"));
+                    if (strRef && CFStringGetCString(strRef, serial, 14, kCFStringEncodingUTF8));
+                    else {
+                        CFRelease(strRef);
+                        continue;
+                    }
+                    // NSLog(@"%s %s %d", name, serial, *numeric_serial);
+                    CFRelease(strRef);
+                    ret = true;
+                } else {
+                    continue;
+                }
+            } else {
+                continue;
+            }
+        }
+    }
+    IOObjectRelease(it);
+    NSLog(@"Done");
+    return ret;
+}   
