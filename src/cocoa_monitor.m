@@ -728,7 +728,7 @@ GLFWAPI bool glfwGetM1DisplayParams(GLFWmonitor* handle, char * name, char * ser
     while ((service = IOIteratorNext(it)) != 0)
     {
         // NSLog(@"DisplayID props -> VID=%x PID=%x UN=%d SN=%x", CGDisplayVendorNumber(displayID), CGDisplayModelNumber(displayID), CGDisplayUnitNumber(displayID), CGDisplaySerialNumber(displayID));
-        CFDictionaryRef props;
+        CFMutableDictionaryRef props;
         kern_return_t t = IORegistryEntryCreateCFProperties(service, &props, kCFAllocatorDefault, kNilOptions);
         if (t == KERN_SUCCESS) {
             CFDictionaryRef dispAttributes = CFDictionaryGetValue(props, CFSTR("DisplayAttributes"));
@@ -749,7 +749,7 @@ GLFWAPI bool glfwGetM1DisplayParams(GLFWmonitor* handle, char * name, char * ser
                         continue;
                     }
                     ref = CFDictionaryGetValue(prodAttributes, CFSTR("SerialNumber"));
-                    if (ref && CFNumberGetValue(ref, kCFNumberSInt32Type, &uint_val) && uint_val==CGDisplaySerialNumber(displayID)) numeric_serial = uint_val;
+                    if (ref && CFNumberGetValue(ref, kCFNumberSInt32Type, &uint_val) && uint_val==CGDisplaySerialNumber(displayID)) *numeric_serial = uint_val;
                     else {
                         CFRelease(ref);
                         continue;
