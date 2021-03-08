@@ -774,6 +774,6 @@ GLFWAPI bool glfwGetM1DisplayParams(GLFWmonitor* handle, char * name, char * ser
         }
     }
     IOObjectRelease(it);
-    NSLog(@"Done");
+    // NSLog(@"Done");
     return ret;
 }   
