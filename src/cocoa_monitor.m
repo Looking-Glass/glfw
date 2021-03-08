@@ -762,13 +762,8 @@ GLFWAPI bool glfwGetM1DisplayParams(GLFWmonitor* handle, char * name, char * ser
                         continue;
                     }
                     strRef = CFDictionaryGetValue(prodAttributes, CFSTR("AlphanumericSerialNumber"));
-                    if (strRef && CFStringGetCString(strRef, serial, 14, kCFStringEncodingUTF8));
-                    else {
-                        CFRelease(strRef);
-                        continue;
-                    }
-                    // NSLog(@"%s %s %d", name, serial, *numeric_serial);
-                    CFRelease(strRef);
+                    if (strRef && CFStringGetCString(strRef, serial, 14, kCFStringEncodingUTF8)) CFRelease(strRef);
+                    else strcpy(serial, "");
                     ret = true;
                 } else {
                     continue;
