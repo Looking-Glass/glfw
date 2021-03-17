@@ -720,14 +720,14 @@ GLFWAPI bool glfwGetM1DisplayParams(GLFWmonitor* handle, char * name, char * ser
     io_iterator_t it;
     io_service_t service;
     bool ret = false;
-
+    strcpy(serial, "");
     if (IOServiceGetMatchingServices(kIOMasterPortDefault, IOServiceMatching("IOMobileFramebuffer"),&it) != 0)
     {
         return NULL;
     }
     while ((service = IOIteratorNext(it)) != 0)
     {
-        // NSLog(@"DisplayID props -> VID=%x PID=%x UN=%d SN=%x", CGDisplayVendorNumber(displayID), CGDisplayModelNumber(displayID), CGDisplayUnitNumber(displayID), CGDisplaySerialNumber(displayID));
+         //NSLog(@"DisplayID props -> VID=%x PID=%x UN=%d SN=%x", CGDisplayVendorNumber(displayID), CGDisplayModelNumber(displayID), CGDisplayUnitNumber(displayID), CGDisplaySerialNumber(displayID));
         CFMutableDictionaryRef props;
         kern_return_t t = IORegistryEntryCreateCFProperties(service, &props, kCFAllocatorDefault, kNilOptions);
         if (t == KERN_SUCCESS) {
@@ -737,34 +737,38 @@ GLFWAPI bool glfwGetM1DisplayParams(GLFWmonitor* handle, char * name, char * ser
                 if (prodAttributes != NULL) {
                     uint32_t uint_val;
                     CFNumberRef ref = CFDictionaryGetValue(prodAttributes, CFSTR("ProductID"));
-                    if (ref && CFNumberGetValue(ref, kCFNumberSInt32Type, &uint_val) && uint_val==CGDisplayModelNumber(displayID));
+                    if (!ref) continue;
+                    if (CFNumberGetValue(ref, kCFNumberSInt32Type, &uint_val) && uint_val==CGDisplayModelNumber(displayID));
                     else {
                         CFRelease(ref);
                         continue;
                     }
                     ref = CFDictionaryGetValue(prodAttributes, CFSTR("LegacyManufacturerID"));
-                    if (ref && CFNumberGetValue(ref, kCFNumberSInt32Type, &uint_val) && uint_val==CGDisplayVendorNumber(displayID));
+                    if (!ref) continue;
+                    if (CFNumberGetValue(ref, kCFNumberSInt32Type, &uint_val) && uint_val==CGDisplayVendorNumber(displayID));
                     else {
                         CFRelease(ref);
                         continue;
                     }
                     ref = CFDictionaryGetValue(prodAttributes, CFSTR("SerialNumber"));
-                    if (ref && CFNumberGetValue(ref, kCFNumberSInt32Type, &uint_val) && uint_val==CGDisplaySerialNumber(displayID)) *numeric_serial = uint_val;
+                    if (!ref) continue;
+                    if (CFNumberGetValue(ref, kCFNumberSInt32Type, &uint_val) && uint_val==CGDisplaySerialNumber(displayID)) *numeric_serial = uint_val;
                     else {
                         CFRelease(ref);
                         continue;
                     }
                     CFRelease(ref);
                     CFStringRef strRef = CFDictionaryGetValue(prodAttributes, CFSTR("ProductName"));
-                    if (strRef && CFStringGetCString(strRef, name, 14, kCFStringEncodingUTF8));
+                    if (!strRef) continue;
+                    if (CFStringGetCString(strRef, name, 14, kCFStringEncodingUTF8)) ret = true;
                     else {
                         CFRelease(strRef);
                         continue;
                     }
                     strRef = CFDictionaryGetValue(prodAttributes, CFSTR("AlphanumericSerialNumber"));
-                    if (strRef && CFStringGetCString(strRef, serial, 14, kCFStringEncodingUTF8)) CFRelease(strRef);
-                    else strcpy(serial, "");
-                    ret = true;
+                    if (!strRef) continue;
+                    CFStringGetCString(strRef, serial, 14, kCFStringEncodingUTF8);
+                    CFRelease(strRef);
                 } else {
                     continue;
                 }
@@ -774,6 +778,5 @@ GLFWAPI bool glfwGetM1DisplayParams(GLFWmonitor* handle, char * name, char * ser
         }
     }
     IOObjectRelease(it);
-    // NSLog(@"Done");
     return ret;
 }   
