@@ -714,7 +714,7 @@ GLFWAPI unsigned char* glfwGetCocoaDisplayEDID(GLFWmonitor* handle)
 }
 
 // This ONLY works on arm64
-GLFWAPI bool glfwGetM1DisplayParams(GLFWmonitor* handle, char * name, char * serial, uint32_t * numeric_serial){
+GLFWAPI bool glfwGetM1DisplayParams(GLFWmonitor* handle, char * name, char * serial, uint32_t * product_id, uint32_t * numeric_serial){
     _GLFWmonitor* monitor = (_GLFWmonitor*) handle;
     CGDirectDisplayID displayID = monitor->ns.displayID;
     io_iterator_t it;
@@ -738,7 +738,7 @@ GLFWAPI bool glfwGetM1DisplayParams(GLFWmonitor* handle, char * name, char * ser
                     uint32_t uint_val;
                     CFNumberRef ref = CFDictionaryGetValue(prodAttributes, CFSTR("ProductID"));
                     if (!ref) continue;
-                    if (CFNumberGetValue(ref, kCFNumberSInt32Type, &uint_val) && uint_val==CGDisplayModelNumber(displayID));
+                    if (CFNumberGetValue(ref, kCFNumberSInt32Type, &uint_val) && uint_val==CGDisplayModelNumber(displayID)) *product_id = uint_val;
                     else {
                         CFRelease(ref);
                         continue;
